@@ -14,6 +14,7 @@ import {
   songs,
   specialMessages,
   rainEmojis,
+  heroImageUrl,
 } from "@/config/celebration";
 
 export default function CelebrationPage() {
@@ -110,17 +111,12 @@ export default function CelebrationPage() {
         animate={{ opacity: 1, y: 0, rotate: 2 }}
         transition={{ delay: 0.8, type: "spring", stiffness: 150 }}
       >
-        <div className="bg-gradient-to-br from-pink-100 via-rose-50 to-pink-100 rounded-xl h-48 flex items-center justify-center relative overflow-hidden">
-          <motion.div
-            className="text-6xl"
-            animate={{
-              scale: [1, 1.1, 1],
-              rotate: [0, 5, -5, 0],
-            }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          >
-            {"\uD83D\uDC95"}
-          </motion.div>
+        <div className="rounded-xl overflow-hidden relative">
+          <img
+            src={heroImageUrl}
+            alt="Us"
+            className="w-full h-64 object-cover"
+          />
           {miniHearts.map((mh) => (
             <motion.span
               key={mh.id}

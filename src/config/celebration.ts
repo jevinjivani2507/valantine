@@ -46,6 +46,9 @@ export const specialMessages = [
   },
 ];
 
+export const heroImageUrl =
+  "https://boxxpdf.blob.core.windows.net/mypdf/526e1f5b-f0e9-4c6a-9c75-ac80b1e5a4db.png";
+
 export const rainEmojis = [
   "\u2764\uFE0F",
   "\uD83D\uDC97",
