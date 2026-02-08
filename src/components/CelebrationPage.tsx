@@ -6,8 +6,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
-import YouTube from "react-youtube";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import YouTube, { type YouTubeEvent } from "react-youtube";
 import { Button } from "@/components/ui/button";
 import {
   specialReasons,
@@ -23,6 +23,9 @@ export default function CelebrationPage() {
   const [boostCount, setBoostCount] = useState(0);
   const [activeSong, setActiveSong] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
+  const [ytReady, setYtReady] = useState(false);
+  const [heroLoaded, setHeroLoaded] = useState(false);
+  const playerRef = useRef<YT.Player | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoveMeter(100), 600);
@@ -53,11 +56,27 @@ export default function CelebrationPage() {
     setBoostCount((c) => c + 1);
   };
 
+  const handleYtReady = useCallback((e: YouTubeEvent) => {
+    playerRef.current = e.target;
+    setYtReady(true);
+    e.target.playVideo();
+  }, []);
+
+  const handleSongSwitch = useCallback(
+    (index: number) => {
+      if (index !== activeSong) {
+        setYtReady(false);
+        setActiveSong(index);
+      }
+    },
+    [activeSong]
+  );
+
   const youtubeOpts = {
     height: "180",
     width: "100%",
     playerVars: {
-      autoplay: 0 as const,
+      autoplay: 1 as const,
       modestbranding: 1 as const,
       rel: 0 as const,
     },
@@ -112,33 +131,15 @@ export default function CelebrationPage() {
         transition={{ delay: 0.8, type: "spring", stiffness: 150 }}
       >
         <div className="rounded-xl overflow-hidden relative">
+          {!heroLoaded && <Shimmer className="w-full h-64" />}
           <img
             src={heroImageUrl}
             alt="Us"
-            className="w-full h-64 object-cover"
+            className={`w-full h-64 object-cover transition-opacity duration-500 ${
+              heroLoaded ? "opacity-100" : "opacity-0"
+            }`}
+            onLoad={() => setHeroLoaded(true)}
           />
-          {miniHearts.map((mh) => (
-            <motion.span
-              key={mh.id}
-              className="absolute text-pink-300 select-none"
-              style={{
-                left: `${mh.x}%`,
-                top: `${mh.y}%`,
-                fontSize: mh.size,
-              }}
-              animate={{
-                y: [0, -10, 0],
-                opacity: [0.3, 0.7, 0.3],
-              }}
-              transition={{
-                duration: mh.duration,
-                repeat: Infinity,
-                delay: mh.delay,
-              }}
-            >
-              {"\u2764\uFE0F"}
-            </motion.span>
-          ))}
         </div>
         <p className="text-center text-xs text-pink-400 mt-3 font-medium">
           Us, always {"\u2728"}
@@ -210,7 +211,7 @@ export default function CelebrationPage() {
           {songs.map((song, i) => (
             <motion.button
               key={song.id}
-              onClick={() => setActiveSong(i)}
+              onClick={() => handleSongSwitch(i)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all ${
                 activeSong === i
                   ? "bg-gradient-to-r from-pink-400 to-rose-500 text-white shadow-md shadow-pink-200"
@@ -225,22 +226,28 @@ export default function CelebrationPage() {
         </div>
 
         {/* YouTube player */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={songs[activeSong].id}
-            className="rounded-xl overflow-hidden"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.3 }}
-          >
-            <YouTube
-              videoId={songs[activeSong].id}
-              opts={youtubeOpts}
-              className="w-full [&>iframe]:rounded-xl"
-            />
-          </motion.div>
-        </AnimatePresence>
+        <div className="relative rounded-xl overflow-hidden">
+          {!ytReady && (
+            <Shimmer className="w-full h-[180px] absolute inset-0 z-10" />
+          )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={songs[activeSong].id}
+              className="rounded-xl overflow-hidden"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: ytReady ? 1 : 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+            >
+              <YouTube
+                videoId={songs[activeSong].id}
+                opts={youtubeOpts}
+                onReady={handleYtReady}
+                className="w-full [&>iframe]:rounded-xl"
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
         <p className="text-xs text-pink-400 mt-3 text-center italic">
           "{songs[activeSong].title}" - {songs[activeSong].artist}
@@ -365,6 +372,19 @@ export default function CelebrationPage() {
         favorite
       </motion.p>
     </motion.div>
+  );
+}
+
+function Shimmer({ className = "" }: { className?: string }) {
+  return (
+    <div className={`bg-pink-100 rounded-xl overflow-hidden ${className}`}>
+      <motion.div
+        className="h-full w-full bg-gradient-to-r from-pink-100 via-white/60 to-pink-100"
+        style={{ backgroundSize: "200% 100%" }}
+        animate={{ backgroundPosition: ["100% 0%", "-100% 0%"] }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+      />
+    </div>
   );
 }
 
