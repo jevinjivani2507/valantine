@@ -25,7 +25,7 @@ export default function CelebrationPage() {
   const [messageIndex, setMessageIndex] = useState(0);
   const [ytReady, setYtReady] = useState(false);
   const [heroLoaded, setHeroLoaded] = useState(false);
-  const playerRef = useRef<YT.Player | null>(null);
+  const playerRef = useRef<YouTube | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoveMeter(100), 600);
@@ -38,19 +38,6 @@ export default function CelebrationPage() {
     }, 3000);
     return () => clearInterval(interval);
   }, []);
-
-  const miniHearts = useMemo(
-    () =>
-      Array.from({ length: 6 }, (_, i) => ({
-        id: i,
-        x: 15 + Math.random() * 70,
-        y: 15 + Math.random() * 70,
-        size: 10 + Math.random() * 10,
-        duration: 1.5 + Math.random() * 2,
-        delay: Math.random() * 2,
-      })),
-    []
-  );
 
   const handleBoost = () => {
     setBoostCount((c) => c + 1);
