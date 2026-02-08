@@ -125,7 +125,9 @@ export default function CelebrationPage() {
         transition={{ delay: 0.8, type: "spring", stiffness: 150 }}
       >
         <div className="rounded-xl overflow-hidden relative">
-          {!heroLoaded && <Shimmer className="w-full h-64" />}
+          {!heroLoaded && (
+            <Shimmer className="w-full h-64 absolute inset-0 z-10" />
+          )}
           <img
             src={heroImageUrl}
             alt="Us"
