@@ -26,6 +26,7 @@ export default function CelebrationPage() {
   const [ytReady, setYtReady] = useState(false);
   const [heroLoaded, setHeroLoaded] = useState(false);
   const playerRef = useRef<YouTube | null>(null);
+  const hasPlayed = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoveMeter(100), 600);
@@ -46,7 +47,13 @@ export default function CelebrationPage() {
   const handleYtReady = useCallback((e: YouTubeEvent) => {
     playerRef.current = e.target;
     setYtReady(true);
-    e.target.playVideo();
+    if (hasPlayed.current) {
+      e.target.playVideo();
+    }
+  }, []);
+
+  const handleYtPlay = useCallback(() => {
+    hasPlayed.current = true;
   }, []);
 
   const handleSongSwitch = useCallback(
@@ -63,7 +70,7 @@ export default function CelebrationPage() {
     height: "180",
     width: "100%",
     playerVars: {
-      autoplay: 1 as const,
+      autoplay: 0 as const,
       modestbranding: 1 as const,
       rel: 0 as const,
     },
@@ -230,6 +237,7 @@ export default function CelebrationPage() {
                 videoId={songs[activeSong].id}
                 opts={youtubeOpts}
                 onReady={handleYtReady}
+                onPlay={handleYtPlay}
                 className="w-full [&>iframe]:rounded-xl"
               />
             </motion.div>
